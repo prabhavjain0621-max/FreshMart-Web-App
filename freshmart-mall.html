@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalash Mart Mall</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #0f172a;
+  color: #fff;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ── TOP HUD ── */
+#hud {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: rgba(15,23,42,.95);
+  border-bottom: 2px solid rgba(255,255,255,.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+}
+.hud-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -1px;
+}
+.hud-logo span { color: #f59e0b; }
+.hud-center {
+  font-size: .8rem;
+  color: rgba(255,255,255,.5);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+.bill-chip {
+  background: #16a34a;
+  color: #fff;
+  border-radius: 99px;
+  padding: .3rem 1rem;
+  font-weight: 900;
+  font-size: .9rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  cursor: pointer;
+  transition: all .2s;
+}
+.bill-chip:hover { background: #15803d; transform: scale(1.05); }
+.badge {
+  background: #f59e0b;
+  color: #0f172a;
+  border-radius: 99px;
+  padding: .1rem .45rem;
+  font-size: .7rem;
+  font-weight: 900;
+}
+
+/* ── GAME CANVAS ── */
+#gameWrap {
+  position: fixed;
+  top: 56px;
+  left: 0; right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+#gameCanvas {
+  display: block;
+}
+
+/* ── SPEECH BUBBLE ── */
+#speech {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #1e293b;
+  border-radius: 16px;
+  padding: .6rem 1.2rem;
+  font-size: .82rem;
+  font-weight: 800;
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  z-index: 500;
+  pointer-events: none;
+  transition: opacity .4s;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-align: center;
+}
+#speech::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-bottom: none;
+  border-top-color: #fff;
+}
+
+/* ── PRODUCT POPUP ── */
+#productPopup {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  background: #fff;
+  color: #1e293b;
+  border-radius: 20px;
+  padding: 1.2rem 1.5rem;
+  z-index: 600;
+  box-shadow: 0 20px 60px rgba(0,0,0,.4);
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+  text-align: center;
+  min-width: 200px;
+  pointer-events: none;
+}
+#productPopup.show {
+  transform: translateX(-50%) scale(1);
+  pointer-events: all;
+}
+#productPopup .pop-emoji { font-size: 3.5rem; }
+#productPopup .pop-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin: .3rem 0; }
+#productPopup .pop-price { color: #5aee90; font-weight: 900; font-size: 1rem; margin-bottom: .8rem; }
+#productPopup .pop-btns { display: flex; gap: .5rem; justify-content: center; }
+.pop-btn {
+  border: none;
+  border-radius: 10px;
+  padding: .5rem 1.1rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: all .15s;
+}
+.pop-btn.add { background: #67f79c; color: #fff; }
+.pop-btn.add:hover { background: #6eec9c; transform: scale(1.05); }
+.pop-btn.skip { background: #f1f5f9; color: #64748b; }
+.pop-btn.skip:hover { background: #e2e8f0; }
+
+/* ── CONTROLS BAR ── */
+#controls {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 80px;
+  background: rgba(15,23,42,.96);
+  border-top: 2px solid rgba(255,255,255,.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+}
+.ctrl-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+}
+.ctrl-btn {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: rgba(243, 72, 72, 0.1);
+  border: 2px solid rgba(255,255,255,.15);
+  color: #fff;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .1s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ctrl-btn:active, .ctrl-btn.pressed {
+  background: #6ef59f;
+  border-color: #63fd9b;
+  transform: scale(.93);
+}
+.ctrl-hint {
+  font-size: .62rem;
+  color: rgba(255,255,255,.4);
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+.ctrl-spacer { width: 48px; }
+.ctrl-middle {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+/* ── BILL DRAWER ── */
+#billDrawer {
+  position: fixed;
+  right: -360px;
+  top: 56px;
+  bottom: 80px;
+  width: 340px;
+  background: #0f172a;
+  border-left: 2px solid rgba(255,255,255,.1);
+  z-index: 900;
+  transition: right .35s cubic-bezier(.4,0,.2,1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -20px 0 60px rgba(0,0,0,.5);
+}
+#billDrawer.open { right: 0; }
+.drawer-header {
+  padding: 1.1rem 1.3rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.drawer-header h3 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; }
+.drawer-close {
+  background: rgba(255,255,255,.08);
+  border: none;
+  color: #fff;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.drawer-close:hover { background: rgba(255,255,255,.15); }
+.drawer-items { flex: 1; overflow-y: auto; padding: .8rem 1.1rem; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.1) transparent; }
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .6rem 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  animation: slideRight .3s ease;
+}
+@keyframes slideRight { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+.di-emoji { font-size: 1.5rem; }
+.di-info { flex:1; min-width:0; }
+.di-name { font-size: .78rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.di-sub { font-size: .68rem; color: rgba(255,255,255,.4); font-weight: 700; }
+.di-total { font-size: .85rem; font-weight: 900; color: #f8bf5c; }
+.di-rm { background: none; border: none; color: rgba(255,255,255,.25); cursor: pointer; font-size: .85rem; padding: .1rem .3rem; transition: color .15s; }
+.di-rm:hover { color: #f86464; }
+.drawer-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: .7rem; opacity: .4; }
+.drawer-empty .em-icon { font-size: 3rem; }
+.drawer-empty p { font-size: .8rem; font-weight: 700; text-align: center; }
+.drawer-footer { padding: 1rem 1.2rem; border-top: 1px solid rgba(255,255,255,.08); }
+.sum-line { display: flex; justify-content: space-between; font-size: .78rem; color: rgba(255,255,255,.55); font-weight: 700; padding: .2rem 0; }
+.sum-line.tot { color: #fff; font-size: 1rem; font-family: 'Syne', sans-serif; font-weight: 800; border-top: 1px solid rgba(255,255,255,.12); margin-top: .4rem; padding-top: .6rem; }
+.sum-line.tot .ta { color: #f5b74d; }
+.checkout-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: .8rem;
+  font-family: 'Syne', sans-serif;
+  font-size: .95rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: .8rem;
+  transition: all .2s;
+  box-shadow: 0 4px 16px rgba(22,163,74,.4);
+}
+.checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(22,163,74,.5); }
+.checkout-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── SUCCESS MODAL ── */
+#modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  display: none;
+  animation: fadeIn .3s ease;
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.modal-box {
+  background: #fff;
+  color: #1e293b;
+  border-radius: 24px;
+  padding: 2.2rem;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+  animation: popUp .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popUp { from { transform: scale(.6); opacity:0; } to { transform: scale(1); opacity:1; } }
+.modal-box .mi { font-size: 4rem; margin-bottom: .3rem; }
+.modal-box h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: .4rem; }
+.modal-box p { color: #64748b; font-size: .88rem; margin-bottom: 1.2rem; }
+.modal-total { background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 14px; padding: .9rem; font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: #16a34a; margin-bottom: 1.2rem; }
+.modal-btn { background: #0f172a; color: #fff; border: none; border-radius: 12px; padding: .75rem 2rem; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .95rem; cursor: pointer; transition: all .2s; }
+.modal-btn:hover { background: #1e293b; transform: scale(1.04); }
+</style>
+</head>
+<body>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-logo">Kalash<span>Mart</span></div>
+  <div class="hud-center" id="hudMsg">🚶 Walk to a shelf and press <b>SPACE</b> to grab an item!</div>
+  <div class="hud-right">
+    <div class="bill-chip" onclick="toggleDrawer()">
+      🧾 <span id="hudTotal">₹0</span>
+      <span class="badge" id="hudCount">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- GAME CANVAS -->
+<div id="gameWrap">
+  <canvas id="gameCanvas"></canvas>
+</div>
+
+<!-- SPEECH BUBBLE -->
+<div id="speech">👋 Welcome! Use arrow keys or buttons below to walk around!</div>
+
+<!-- PRODUCT POPUP -->
+<div id="productPopup">
+  <div class="pop-emoji" id="popEmoji">🍎</div>
+  <div class="pop-name" id="popName">Red Apples</div>
+  <div class="pop-price" id="popPrice">₹89</div>
+  <div class="pop-btns">
+    <button class="pop-btn add" onclick="addToCart()">🛒 Add to Trolley</button>
+    <button class="pop-btn skip" onclick="hidePopup()">Skip</button>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div id="controls">
+  <div class="ctrl-row">
+    <div class="ctrl-hint">MOVE</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:.35rem">
+      <button class="ctrl-btn" id="btnUp" ontouchstart="startMove('up')" ontouchend="stopMove('up')">↑</button>
+      <div class="ctrl-middle">
+        <button class="ctrl-btn" id="btnLeft" ontouchstart="startMove('left')" ontouchend="stopMove('left')">←</button>
+        <button class="ctrl-btn" id="btnDown" ontouchstart="startMove('down')" ontouchend="stopMove('down')">↓</button>
+        <button class="ctrl-btn" id="btnRight" ontouchstart="startMove('right')" ontouchend="stopMove('right')">→</button>
+      </div>
+    </div>
+  </div>
+  <div style="width:1px;height:50px;background:rgba(255,255,255,.1);margin:0 1rem;"></div>
+  <div class="ctrl-row">
+    <div class="ctrl-hint">GRAB</div>
+    <button class="ctrl-btn" id="btnGrab" style="width:80px;border-radius:14px;font-size:.75rem;font-weight:900;letter-spacing:.5px;" onclick="tryGrab()">🤲 GRAB</button>
+  </div>
+  <div style="width:1px;height:50px;background:rgba(255,255,255,.1);margin:0 1rem;"></div>
+  <div class="ctrl-row">
+    <div class="ctrl-hint">BILL</div>
+    <button class="ctrl-btn" style="width:60px;border-radius:14px;" onclick="toggleDrawer()">🧾</button>
+  </div>
+</div>
+
+<!-- BILL DRAWER -->
+<div id="billDrawer">
+  <div class="drawer-header">
+    <h3>🧾 Shopping Bill</h3>
+    <button class="drawer-close" onclick="toggleDrawer()">✕</button>
+  </div>
+  <div class="drawer-items" id="drawerItems">
+    <div class="drawer-empty"><div class="em-icon">🛒</div><p>Walk to shelves<br>and grab items!</p></div>
+  </div>
+  <div class="drawer-footer">
+    <div class="sum-line"><span>Subtotal</span><span id="dSub">₹0.00</span></div>
+    <div class="sum-line"><span>GST (5%)</span><span id="dGst">₹0.00</span></div>
+    <div class="sum-line tot"><span>Total</span><span class="ta" id="dTot">₹0.00</span></div>
+    <button class="checkout-btn" id="checkoutBtn" disabled onclick="checkout()">✅ Checkout</button>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <div class="mi">🎉</div>
+    <h2>Order Placed!</h2>
+    <p>Thanks for shopping at <strong>Kalash Mart</strong>!<br>Your groceries are being packed 🛍️</p>
+    <div class="modal-total" id="modalTotal">₹0.00</div>
+    <button class="modal-btn" onclick="resetShop()">🏪 Shop Again and get extra discount on further visit!!</button>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const PRODUCTS = [
+  // Fruits & Veg (shelf row 0)
+  {id:1,name:'Red Apples',emoji:'🍎',price:129,col:0},
+  {id:2,name:'Bananas',emoji:'🍌',price:39,col:1},
+  {id:3,name:'Tomatoes',emoji:'🍅',price:39,col:2},
+  {id:4,name:'Broccoli',emoji:'🥦',price:89,col:3},
+  {id:5,name:'Mangoes',emoji:'🥭',price:119,col:4},
+  {id:6,name:'Carrots',emoji:'🥕',price:29,col:5},
+  // Snacks & Drinks (shelf row 1)
+  {id:7,name:'Popcorn',emoji:'🍿',price:19,col:0},
+  {id:8,name:'OJ Juice',emoji:'🧃',price:99,col:1},
+  {id:9,name:'Chips',emoji:'🥨',price:49,col:2},
+  {id:10,name:'Cookies',emoji:'🍪',price:99,col:3},
+  {id:11,name:'Cola',emoji:'🥤',price:69,col:4},
+  {id:12,name:'Energy Bar',emoji:'🍫',price:89,col:5},
+  // Dairy (shelf row 2)
+  {id:13,name:'Full Milk',emoji:'🥛',price:79,col:0},
+  {id:14,name:'Butter',emoji:'🧈',price:99,col:1},
+  {id:15,name:'Cheese',emoji:'🧀',price:179,col:2},
+  {id:16,name:'Yogurt',emoji:'🫙',price:59,col:3},
+  {id:17,name:'Paneer',emoji:'🟡',price:119,col:4},
+  {id:18,name:'Lassi',emoji:'🍸',price:29,col:5},
+];
+
+const AISLES = [
+  {label:'🍎 Fruits & Vegetables', color:'#16a34a', lightColor:'#dcfce7'},
+  {label:'🍿 Snacks & Beverages',  color:'#f59e0b', lightColor:'#fef3c7'},
+  {label:'🥛 Dairy Products',        color:'#3b82f6', lightColor:'#dbeafe'},
+];
+
+// ── CANVAS SETUP ──
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const wrap = document.getElementById('gameWrap');
+
+// Tile sizes
+const TILE = 48;
+let MAP_W, MAP_H, COLS, ROWS;
+let offsetX = 0, offsetY = 0;
+
+function resize() {
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); });
+
+// ── SHELF LAYOUT ──
+// Each aisle row has:  [padding left] shelf unit × 6, [gap], shelf unit ×6 (back to back)
+// World coordinates
+const SHELF_CELL_W = 72;  // px per product slot on shelf
+const SHELF_H = 80;       // shelf height
+const SHELF_Y_START = 80; // top padding
+const SHELF_GAP_Y = 140;  // gap between aisles
+const SHELF_X = 60;       // left margin
+const NUM_COLS = 6;
+
+// Compute shelf positions
+function shelfRow(row) {
+  return SHELF_Y_START + row * (SHELF_H + SHELF_GAP_Y);
+}
+
+const WORLD_W = SHELF_X * 2 + NUM_COLS * SHELF_CELL_W + 80;
+const WORLD_H = SHELF_Y_START + 3 * (SHELF_H + SHELF_GAP_Y) + 200;
+
+// ── PLAYER ──
+const player = {
+  x: WORLD_W / 2,
+  y: WORLD_H - 120,
+  w: 36, h: 48,
+  speed: 3.5,
+  dir: 'down', // up/down/left/right
+  frame: 0,
+  frameTimer: 0,
+  moving: false,
+};
+
+// ── CART ──
+let cart = {}; // id -> qty
+let drawerOpen = false;
+let currentProduct = null;
+let popupVisible = false;
+
+// ── CONTROLS ──
+const keys = {};
+document.addEventListener('keydown', e => {
+  keys[e.key] = true;
+  if (e.key === ' ') { e.preventDefault(); tryGrab(); }
+});
+document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+function startMove(dir) { keys['_touch_' + dir] = true; }
+function stopMove(dir)  { keys['_touch_' + dir] = false; }
+
+const speeches = {
+  welcome: '👋 Welcome! Buddy - Aapka Swagat Hai!!',
+  nearFruits: '🍎 Fruits & Veggies — Fresh from the farm! Press GRAB!',
+  nearSnacks: '🍿 Snacks & Beverages — Treat yourself! Press GRAB!',
+  nearDairy: '🥛 Dairy Products — Cool & fresh! Press GRAB!',
+  added: ['Great pick! 🎯 Added to trolley!', 'Nice one! 😋 Into the cart it goes!', 'Fresh choice! 🌟 Added!', 'Yummy! 🛒 Tossed in your trolley!'],
+  skipped: 'No worries! Keep browsing... 🚶',
+  checkout: '🎉 Enjoy your groceries! See you next time!',
+};
+let speechTimer = null;
+
+function speak(msg) {
+  const el = document.getElementById('speech');
+  el.style.opacity = '0';
+  setTimeout(() => { el.textContent = msg; el.style.opacity = '1'; }, 200);
+  clearTimeout(speechTimer);
+  speechTimer = setTimeout(() => { el.style.opacity = '0'; }, 5000);
+}
+
+speak(speeches.welcome);
+
+// ── PRODUCT POPUP ──
+function showPopup(product) {
+  currentProduct = product;
+  document.getElementById('popEmoji').textContent = product.emoji;
+  document.getElementById('popName').textContent = product.name;
+  document.getElementById('popPrice').textContent = '₹' + product.price;
+  document.getElementById('productPopup').classList.add('show');
+  popupVisible = true;
+}
+function hidePopup() {
+  document.getElementById('productPopup').classList.remove('show');
+  popupVisible = false;
+  currentProduct = null;
+  speak(speeches.skipped);
+}
+function addToCart() {
+  if (!currentProduct) return;
+  const id = currentProduct.id;
+  cart[id] = (cart[id] || 0) + 1;
+  hidePopup();
+  const s = speeches.added;
+  speak(s[Math.floor(Math.random() * s.length)]);
+  renderBill();
+  // Quick cart bounce animation
+  const hud = document.getElementById('hudTotal');
+  hud.parentElement.style.transform = 'scale(1.15)';
+  setTimeout(() => { hud.parentElement.style.transform = 'scale(1)'; }, 200);
+}
+
+// ── GRAB ──
+function tryGrab() {
+  if (popupVisible) { addToCart(); return; }
+  const near = getNearProduct();
+  if (near) {
+    showPopup(near);
+  }
+}
+
+function getNearProduct() {
+  // Check if player is within grab distance of any shelf item
+  for (let row = 0; row < 3; row++) {
+    const sy = shelfRow(row);
+    for (let col = 0; col < NUM_COLS; col++) {
+      const sx = SHELF_X + col * SHELF_CELL_W + SHELF_CELL_W / 2;
+      const px = player.x;
+      const py = player.y + player.h / 2;
+      const dist = Math.sqrt((px - sx) ** 2 + (py - (sy + SHELF_H)) ** 2);
+      if (dist < 70) {
+        const product = PRODUCTS.find(p => p.col === col && Math.floor(PRODUCTS.indexOf(p) / NUM_COLS) === row);
+        const idx = row * NUM_COLS + col;
+        if (PRODUCTS[idx]) return PRODUCTS[idx];
+      }
+    }
+  }
+  return null;
+}
+
+// ── BILL ──
+function fmt(n) { return '₹' + n.toFixed(2); }
+
+function renderBill() {
+  const entries = Object.entries(cart);
+  let subtotal = 0;
+  let count = 0;
+  let html = '';
+
+  if (entries.length === 0) {
+    document.getElementById('drawerItems').innerHTML = '<div class="drawer-empty"><div class="em-icon">🛒</div><p>Walk to shelves<br>and grab items!</p></div>';
+  } else {
+    entries.forEach(([id, qty]) => {
+      const p = PRODUCTS.find(x => x.id === Number(id));
+      const total = p.price * qty;
+      subtotal += total;
+      count += qty;
+      html += `<div class="drawer-item">
+        <div class="di-emoji">${p.emoji}</div>
+        <div class="di-info"><div class="di-name">${p.name}</div><div class="di-sub">×${qty} · ₹${p.price} each</div></div>
+        <div class="di-total">${fmt(total)}</div>
+        <button class="di-rm" onclick="removeItem(${p.id})">✕</button>
+      </div>`;
+    });
+    document.getElementById('drawerItems').innerHTML = html;
+  }
+
+  const gst = subtotal * 0.05;
+  const grand = subtotal + gst;
+  document.getElementById('dSub').textContent = fmt(subtotal);
+  document.getElementById('dGst').textContent = fmt(gst);
+  document.getElementById('dTot').textContent = fmt(grand);
+  document.getElementById('hudTotal').textContent = '₹' + Math.round(grand);
+  document.getElementById('hudCount').textContent = count;
+  document.getElementById('checkoutBtn').disabled = entries.length === 0;
+}
+
+function removeItem(id) {
+  delete cart[id];
+  renderBill();
+}
+
+function toggleDrawer() {
+  drawerOpen = !drawerOpen;
+  document.getElementById('billDrawer').classList.toggle('open', drawerOpen);
+}
+
+function checkout() {
+  const grand = document.getElementById('dTot').textContent;
+  document.getElementById('modalTotal').textContent = grand;
+  document.getElementById('modal').style.display = 'flex';
+  speak(speeches.checkout);
+}
+
+function resetShop() {
+  cart = {};
+  document.getElementById('modal').style.display = 'none';
+  renderBill();
+  drawerOpen = false;
+  document.getElementById('billDrawer').classList.remove('open');
+  speak(speeches.welcome);
+}
+
+// ── NEAR AISLE DETECTION for speech ──
+let lastAisleSpeech = -1;
+function checkNearAisle() {
+  for (let row = 0; row < 3; row++) {
+    const sy = shelfRow(row);
+    const py = player.y;
+    if (Math.abs(py - (sy + SHELF_H + 20)) < 60) {
+      if (lastAisleSpeech !== row) {
+        lastAisleSpeech = row;
+        const msgs = [speeches.nearFruits, speeches.nearSnacks, speeches.nearDairy];
+        speak(msgs[row]);
+        // Also update HUD hint
+        document.getElementById('hudMsg').innerHTML = `${['🍎','🍿','🥛'][row]} ${AISLES[row].label} — Press <b>GRAB</b> to pick items!`;
+      }
+      return;
+    }
+  }
+  lastAisleSpeech = -1;
+}
+
+// ── RENDER ──
+function drawWorld() {
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // Smooth camera follow
+  const targetX = player.x - W / 2;
+  const targetY = player.y - H / 2;
+  offsetX += (targetX - offsetX) * 0.12;
+  offsetY += (targetY - offsetY) * 0.12;
+  offsetX = Math.max(0, Math.min(WORLD_W - W, offsetX));
+  offsetY = Math.max(0, Math.min(WORLD_H - H, offsetY));
+
+  ctx.save();
+  ctx.translate(-offsetX, -offsetY);
+
+  // ── FLOOR ──
+  // Base
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+
+  // Tile grid
+  ctx.strokeStyle = 'rgba(203,213,225,.6)';
+  ctx.lineWidth = 1;
+  const tileSize = 48;
+  for (let x = 0; x <= WORLD_W; x += tileSize) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, WORLD_H); ctx.stroke();
+  }
+  for (let y = 0; y <= WORLD_H; y += tileSize) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(WORLD_W, y); ctx.stroke();
+  }
+
+  // Aisle runner carpets
+  for (let row = 0; row < 3; row++) {
+    const sy = shelfRow(row);
+    ctx.fillStyle = AISLES[row].lightColor + 'aa';
+    ctx.fillRect(0, sy - 10, WORLD_W, SHELF_H + 80);
+  }
+
+  // ── SHELVES ──
+  for (let row = 0; row < 3; row++) {
+    const sy = shelfRow(row);
+    const aisle = AISLES[row];
+
+    // Aisle sign board
+    ctx.save();
+    ctx.fillStyle = aisle.color;
+    roundRect(ctx, SHELF_X - 10, sy - 42, NUM_COLS * SHELF_CELL_W + 20, 30, 8);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(aisle.label, SHELF_X + NUM_COLS * SHELF_CELL_W / 2, sy - 22);
+    ctx.restore();
+
+    // Shelf back wall
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(SHELF_X - 12, sy - 10, NUM_COLS * SHELF_CELL_W + 24, SHELF_H + 8);
+
+    // Shelf planks
+    const numPlanks = 3;
+    for (let pl = 0; pl < numPlanks; pl++) {
+      const py = sy - 5 + pl * 26;
+      const grad = ctx.createLinearGradient(0, py, 0, py + 14);
+      grad.addColorStop(0, '#d4a574');
+      grad.addColorStop(.5, '#b07d3a');
+      grad.addColorStop(1, '#8a5c20');
+      ctx.fillStyle = grad;
+      ctx.fillRect(SHELF_X - 8, py, NUM_COLS * SHELF_CELL_W + 16, 14);
+
+      // Shadow under plank
+      ctx.fillStyle = 'rgba(0,0,0,.12)';
+      ctx.fillRect(SHELF_X - 8, py + 14, NUM_COLS * SHELF_CELL_W + 16, 4);
+    }
+
+    // Products on shelves
+    for (let col = 0; col < NUM_COLS; col++) {
+      const idx = row * NUM_COLS + col;
+      const product = PRODUCTS[idx];
+      if (!product) continue;
+
+      const px = SHELF_X + col * SHELF_CELL_W + SHELF_CELL_W / 2;
+      const py = sy + 8;
+
+      // Product quantity in cart
+      const qty = cart[product.id] || 0;
+
+      // Glow if in cart
+      if (qty > 0) {
+        ctx.save();
+        ctx.shadowColor = aisle.color;
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = aisle.color + '33';
+        ctx.beginPath();
+        ctx.arc(px, py + 22, 24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Check if player is near
+      const ppx = player.x;
+      const ppy = player.y + player.h / 2;
+      const dist = Math.sqrt((ppx - px) ** 2 + (ppy - (py + 24)) ** 2);
+      const isNear = dist < 70;
+
+      // Hover glow
+      if (isNear) {
+        ctx.save();
+        ctx.shadowColor = '#fff';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(px, py + 22, 26, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,.15)';
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Emoji
+      ctx.font = '32px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(product.emoji, px, py + 34);
+
+      // Price tag
+      ctx.save();
+      ctx.fillStyle = isNear ? '#fff' : '#f8fafc';
+      roundRect(ctx, px - 26, py + 38, 52, 18, 5);
+      ctx.fill();
+      ctx.fillStyle = aisle.color;
+      ctx.font = 'bold 10px Nunito, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('₹' + product.price, px, py + 51);
+      ctx.restore();
+
+      // Cart qty badge
+      if (qty > 0) {
+        ctx.save();
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(px + 16, py + 6, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 9px Nunito, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(qty, px + 16, py + 10);
+        ctx.restore();
+      }
+
+      // "Press GRAB" tooltip
+      if (isNear && !popupVisible) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(15,23,42,.85)';
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        roundRect(ctx, px - 38, py - 22, 76, 20, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 10px Nunito, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🤲 Press GRAB', px, py - 7);
+        ctx.restore();
+      }
+    }
+
+    // Shelf front lip
+    ctx.fillStyle = '#a16207';
+    ctx.fillRect(SHELF_X - 8, sy + SHELF_H - 6, NUM_COLS * SHELF_CELL_W + 16, 6);
+  }
+
+  // ── CHECKOUT COUNTER ──
+  const cx = WORLD_W / 2 - 80;
+  const cy = WORLD_H - 90;
+  const grad2 = ctx.createLinearGradient(cx, cy, cx, cy + 55);
+  grad2.addColorStop(0, '#1e40af');
+  grad2.addColorStop(1, '#1e3a8a');
+  ctx.fillStyle = grad2;
+  roundRect(ctx, cx, cy, 160, 55, 10);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 13px Nunito, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('💳 CHECKOUT', cx + 80, cy + 24);
+  ctx.font = '10px Nunito, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.7)';
+  ctx.fillText('Walk here & open Bill', cx + 80, cy + 40);
+
+  // ── PLAYER ──
+  drawPlayer();
+
+  ctx.restore();
+}
+
+function drawPlayer() {
+  const px = player.x;
+  const py = player.y;
+
+  // Shadow
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,.12)';
+  ctx.beginPath();
+  ctx.ellipse(px, py + player.h + 2, 14, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Trolley (behind player when going up)
+  if (player.dir === 'up') drawTrolley(px, py);
+
+  // Body layers
+  // Legs
+  const legAnim = player.moving ? Math.sin(Date.now() / 100) * 6 : 0;
+  ctx.fillStyle = '#1e40af'; // pants
+  // left leg
+  ctx.beginPath();
+  ctx.roundRect(px - 9, py + 24, 10, 18, 4);
+  ctx.fill();
+  // right leg
+  ctx.beginPath();
+  ctx.roundRect(px + 1, py + 24, 10, 18, 4);
+  ctx.fill();
+
+  // Shoes
+  ctx.fillStyle = '#1e293b';
+  ctx.beginPath(); ctx.ellipse(px - 4, py + 43, 8, 4, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(px + 8, py + 43, 8, 4, 0, 0, Math.PI * 2); ctx.fill();
+  const bodyGrad = ctx.createLinearGradient(px - 14, py + 10, px + 14, py + 10);
+  bodyGrad.addColorStop(0, '#16a34a');
+  bodyGrad.addColorStop(1, '#15803d');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.roundRect(px - 13, py + 8, 27, 20, 6);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 6px Nunito';
+  ctx.textAlign = 'center';
+  ctx.fillText('ME', px + 0.5, py + 21);
+  ctx.fillStyle = '#16a34a';
+  ctx.beginPath(); ctx.roundRect(px - 18, py + 10, 7, 14, 3); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(px + 12, py + 10, 7, 14, 3); ctx.fill();
+  ctx.fillStyle = '#f5c5a3';
+  ctx.beginPath(); ctx.roundRect(px - 4, py + 2, 9, 8, 3); ctx.fill();
+  ctx.fillStyle = '#f5c5a3';
+  ctx.beginPath();
+  ctx.arc(px + 0.5, py - 6, 14, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#1e293b';
+  if (player.dir === 'down' || player.dir === 'left' || player.dir === 'right') {
+    // Eyes
+    ctx.beginPath(); ctx.arc(px - 5, py - 8, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(px + 6, py - 8, 2.5, 0, Math.PI * 2); ctx.fill();
+    // Smile
+    ctx.beginPath();
+    ctx.arc(px + 0.5, py - 4, 5, 0, Math.PI);
+    ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1.5; ctx.stroke();
+  } else {
+    // Eyes from behind (ears)
+    ctx.fillStyle = '#e8a982';
+    ctx.beginPath(); ctx.arc(px - 13, py - 6, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(px + 14, py - 6, 4, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Hair
+  ctx.fillStyle = '#1e293b';
+  ctx.beginPath();
+  ctx.arc(px + 0.5, py - 14, 10, Math.PI, Math.PI * 2);
+  ctx.fill();
+
+  // Trolley (in front when going down)
+  if (player.dir !== 'up') drawTrolley(px, py);
+
+  ctx.restore();
+}
+
+function drawTrolley(px, py) {
+  const tx = px + 12;
+  const ty = py + 20;
+
+  // Handle
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(tx, ty);
+  ctx.lineTo(tx + 18, ty + 2);
+  ctx.stroke();
+
+  // Basket
+  const bx = tx + 10, by = ty + 2;
+  ctx.fillStyle = '#cbd5e1';
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(bx, by);
+  ctx.lineTo(bx + 22, by);
+  ctx.lineTo(bx + 18, by + 16);
+  ctx.lineTo(bx + 2, by + 16);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+
+  // Items in cart (little dots)
+  const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  if (cartCount > 0) {
+    ctx.fillStyle = '#16a34a';
+    ctx.font = '10px serif';
+    ctx.textAlign = 'center';
+    const emojis = Object.keys(cart).slice(0, 3).map(id => PRODUCTS.find(p => p.id === Number(id))?.emoji).filter(Boolean);
+    emojis.forEach((e, i) => {
+      ctx.fillText(e, bx + 6 + i * 8, by + 12);
+    });
+  }
+
+  // Wheels
+  ctx.fillStyle = '#475569';
+  ctx.beginPath(); ctx.arc(bx + 4, by + 19, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(bx + 18, by + 19, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#94a3b8';
+  ctx.beginPath(); ctx.arc(bx + 4, by + 19, 2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(bx + 18, by + 19, 2, 0, Math.PI * 2); ctx.fill();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+// ── GAME LOOP ──
+function update() {
+  if (popupVisible) return; // freeze movement when popup shown
+
+  let moved = false;
+  const spd = player.speed;
+
+  const goUp    = keys['ArrowUp']    || keys['w'] || keys['W'] || keys['_touch_up'];
+  const goDown  = keys['ArrowDown']  || keys['s'] || keys['S'] || keys['_touch_down'];
+  const goLeft  = keys['ArrowLeft']  || keys['a'] || keys['A'] || keys['_touch_left'];
+  const goRight = keys['ArrowRight'] || keys['d'] || keys['D'] || keys['_touch_right'];
+
+  if (goUp)    { player.y -= spd; player.dir = 'up';    moved = true; }
+  if (goDown)  { player.y += spd; player.dir = 'down';  moved = true; }
+  if (goLeft)  { player.x -= spd; player.dir = 'left';  moved = true; }
+  if (goRight) { player.x += spd; player.dir = 'right'; moved = true; }
+
+  // Clamp to world bounds
+  player.x = Math.max(20, Math.min(WORLD_W - 20, player.x));
+  player.y = Math.max(40, Math.min(WORLD_H - 50, player.y));
+
+  player.moving = moved;
+  checkNearAisle();
+}
+
+let lastTime = 0;
+function loop(ts) {
+  const dt = ts - lastTime;
+  lastTime = ts;
+
+  update();
+
+  // Clear
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawWorld();
+
+  requestAnimationFrame(loop);
+}
+
+// Initial player position
+player.x = WORLD_W / 2;
+player.y = WORLD_H - 100;
+
+renderBill();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
